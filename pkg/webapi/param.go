@@ -1,53 +1,35 @@
 package webapi
 
 import (
-	"encoding/json"
 	"net/http"
 
-	"google.golang.org/grpc"
-	"google.golang.org/grpc/codes"
+	"github.com/gogo/protobuf/proto"
+	"github.com/golang/protobuf/jsonpb"
+	"google.golang.org/grpc/status"
 )
 
 type grpcJSONParamer struct {
 }
 
-func (j grpcJSONParamer) ParseRequest(req *http.Request, in interface{}) error {
+func (j grpcJSONParamer) ParseRequest(req *http.Request, in proto.Message) error {
 	defer req.Body.Close()
 
-	decoder := json.NewDecoder(req.Body)
-	return decoder.Decode(in)
+	return jsonpb.Unmarshal(req.Body, in)
 }
 
-func (j grpcJSONParamer) HandleResponse(rw http.ResponseWriter, out interface{}) {
+func (j grpcJSONParamer) HandleResponse(rw http.ResponseWriter, out proto.Message, err error) {
 	if Written(rw) {
 		return
 	}
 
-	if out == nil {
+	rw.WriteHeader(http.StatusOK)
+
+	m := new(jsonpb.Marshaler)
+
+	if err != nil {
+		m.Marshal(rw, status.New(status.Code(err), err.Error()).Proto())
 		return
 	}
 
-	var res Result
-	res.Res.Code = int32(codes.OK)
-
-	switch o := out.(type) {
-	case error:
-		res.Res.Code = int32(grpc.Code(o))
-		res.Res.Message = o.Error()
-
-	default:
-		res.Data = out
-	}
-
-	data, err := json.Marshal(res)
-	if err != nil {
-		var mres Result
-		mres.Res.Code = int32(codes.Internal)
-		mres.Res.Message = err.Error()
-
-		data, _ = json.Marshal(mres)
-	}
-
-	rw.Write(data)
-	rw.WriteHeader(http.StatusOK)
+	m.Marshal(rw, out)
 }

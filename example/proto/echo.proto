@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package proto;
+
+import "github.com/gogo/protobuf/gogoproto/gogo.proto";
+
+option (gogoproto.goproto_enum_prefix_all) = false;
+
+enum MessageType {
+    MessageTypeUnKnown = 0;
+    MessageTypeA = 1;
+    MessageTypeB = 2;
+}
+
+message In {
+    MessageType typ = 1;
+    string msg = 2;
+    int64 num = 3;
+}
+
+message Out {
+    MessageType typ = 1;
+    string msg = 2;
+    int64 num = 3;
+}
+
+service Echo {
+    rpc Ping(In) returns (Out);
+    rpc Stream(stream In) returns (stream Out);
+}
