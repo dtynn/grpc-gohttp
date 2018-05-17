@@ -1,6 +1,8 @@
 package webapi
 
-import "net/http"
+import (
+	"net/http"
+)
 
 func newResponseWritter(rw http.ResponseWriter) *responseWriter {
 	if resw, ok := rw.(*responseWriter); ok {
