@@ -69,8 +69,6 @@ func (s *Service) Listen(addr string) {
 	gL := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
 	wL := m.Match(cmux.Any())
 
-	ctx, cancel := context.WithCancel(context.Background())
-
 	errCh := make(chan error, 1)
 	go func() {
 		if err := m.Serve(); err != nil {
@@ -80,6 +78,7 @@ func (s *Service) Listen(addr string) {
 		close(errCh)
 	}()
 
+	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
 	if s.g != nil {
