@@ -21,6 +21,7 @@ type Plugin struct {
 	grpcPkg     generator.Single
 	codesPkg    generator.Single
 	metadataPkg generator.Single
+	typesPkg    generator.Single
 }
 
 // Name returns plugin name
@@ -41,6 +42,7 @@ func (p *Plugin) Generate(fd *generator.FileDescriptor) {
 	p.grpcPkg = p.NewImport("google.golang.org/grpc")
 	p.codesPkg = p.NewImport("google.golang.org/grpc/codes")
 	p.metadataPkg = p.NewImport("google.golang.org/grpc/metadata")
+	p.typesPkg = p.NewImport("github.com/dtynn/grpc-gohttp/pkg/types")
 
 	p.generateRefs()
 	p.generateInterfaces()
@@ -55,24 +57,12 @@ func (p *Plugin) generateRefs() {
 }
 
 func (p *Plugin) generateInterfaces() {
-	p.P("// Paramer handle with arguments and outputs")
-	p.P("type Paramer interface {")
-	p.P("	ParseRequest(req *", p.httpPkg.Use(), ".Request, in ", p.Pkg["proto"], ".Message) error")
-	p.P("	HandleResponse(rw ", p.httpPkg.Use(), ".ResponseWriter, out ", p.Pkg["proto"], ".Message, err error)")
-	p.P("}")
-	p.P()
 
-	p.P("// WebAPIService handle with api registration")
-	p.P("type WebAPIService interface {")
-	p.P("	Paramer")
-	p.P("	Register(pattern string, handler ", p.httpPkg.Use(), ".Handler)")
-	p.P("}")
-	p.P()
 }
 
 func (p *Plugin) generateService(s *descriptor.ServiceDescriptorProto) {
 	p.P("// RegisterWebAPI", s.GetName(), "Server register web api methods for ", s.GetName())
-	p.P("func RegisterWebAPI", s.GetName(), "Server(s WebAPIService, srv ", s.GetName(), "Server) {")
+	p.P("func RegisterWebAPI", s.GetName(), "Server(s ", p.typesPkg.Use(), ".Server, srv ", s.GetName(), "Server) {")
 	for _, m := range s.GetMethod() {
 		p.P(p.methodRegisterName(s, m), "(s, srv)")
 	}
@@ -89,7 +79,7 @@ func (p *Plugin) methodRegisterName(s *descriptor.ServiceDescriptorProto, m *des
 }
 
 func (p *Plugin) generateMethodRegister(s *descriptor.ServiceDescriptorProto, m *descriptor.MethodDescriptorProto) {
-	p.P("func ", p.methodRegisterName(s, m), "(s WebAPIService, srv ", s.GetName(), "Server) {")
+	p.P("func ", p.methodRegisterName(s, m), "(s ", p.typesPkg.Use(), ".Server, srv ", s.GetName(), "Server) {")
 
 	if !m.GetServerStreaming() && !m.GetClientStreaming() {
 		inType := p.TypeName(p.ObjectNamed(m.GetInputType()))
