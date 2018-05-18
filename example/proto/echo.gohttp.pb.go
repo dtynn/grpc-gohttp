@@ -17,6 +17,7 @@ import http "net/http"
 import grpc "google.golang.org/grpc"
 import codes "google.golang.org/grpc/codes"
 import metadata "google.golang.org/grpc/metadata"
+import types "github.com/dtynn/grpc-gohttp/pkg/types"
 import proto1 "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
@@ -27,25 +28,13 @@ var _ = proto1.Marshal
 var _ = fmt.Errorf
 var _ = math.Inf
 
-// Paramer handle with arguments and outputs
-type Paramer interface {
-	ParseRequest(req *http.Request, in proto1.Message) error
-	HandleResponse(rw http.ResponseWriter, out proto1.Message, err error)
-}
-
-// WebAPIService handle with api registration
-type WebAPIService interface {
-	Paramer
-	Register(pattern string, handler http.Handler)
-}
-
 // RegisterWebAPIEchoServer register web api methods for Echo
-func RegisterWebAPIEchoServer(s WebAPIService, srv EchoServer) {
+func RegisterWebAPIEchoServer(s types.Server, srv EchoServer) {
 	_Register_Echo_Ping_Handler(s, srv)
 	_Register_Echo_Stream_Handler(s, srv)
 }
 
-func _Register_Echo_Ping_Handler(s WebAPIService, srv EchoServer) {
+func _Register_Echo_Ping_Handler(s types.Server, srv EchoServer) {
 	s.Register("/proto.Echo/Ping", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		in := new(In)
 		if err := s.ParseRequest(req, in); err != nil {
@@ -59,5 +48,5 @@ func _Register_Echo_Ping_Handler(s WebAPIService, srv EchoServer) {
 	}))
 }
 
-func _Register_Echo_Stream_Handler(s WebAPIService, srv EchoServer) {
+func _Register_Echo_Stream_Handler(s types.Server, srv EchoServer) {
 }
