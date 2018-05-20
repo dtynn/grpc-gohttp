@@ -19,7 +19,7 @@ func New() *Service {
 
 // Service webapi service
 type Service struct {
-	grpcJSONParamer
+	GJSONParamer
 
 	mux         http.ServeMux
 	middlewares []http.Handler

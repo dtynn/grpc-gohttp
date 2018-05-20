@@ -8,16 +8,19 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type grpcJSONParamer struct {
+// GJSONParamer grpc json paramer
+type GJSONParamer struct {
 }
 
-func (j grpcJSONParamer) ParseRequest(req *http.Request, in proto.Message) error {
+// ParseRequest parse request body
+func (GJSONParamer) ParseRequest(req *http.Request, in proto.Message) error {
 	defer req.Body.Close()
 
 	return jsonpb.Unmarshal(req.Body, in)
 }
 
-func (j grpcJSONParamer) HandleResponse(rw http.ResponseWriter, out proto.Message, err error) {
+// HandleResponse encode out data or err
+func (GJSONParamer) HandleResponse(rw http.ResponseWriter, out proto.Message, err error) {
 	if Written(rw) {
 		return
 	}
