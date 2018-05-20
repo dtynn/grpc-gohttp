@@ -8,6 +8,9 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+// GJSON global paramer
+var GJSON GJSONParamer
+
 // GJSONParamer grpc json paramer
 type GJSONParamer struct {
 }
