@@ -1,4 +1,4 @@
-package plugin
+package gohttp
 
 import (
 	"github.com/gogo/protobuf/protoc-gen-gogo/descriptor"

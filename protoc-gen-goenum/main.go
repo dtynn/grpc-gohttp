@@ -8,7 +8,7 @@ import (
 	"github.com/gogo/protobuf/proto"
 	"github.com/gogo/protobuf/protoc-gen-gogo/generator"
 
-	"github.com/dtynn/grpc-gohttp/plugin/gohttp"
+	"github.com/dtynn/grpc-gohttp/plugin/goenum"
 )
 
 func main() {
@@ -32,10 +32,10 @@ func main() {
 	gen.WrapTypes()
 	gen.SetPackageNames()
 	gen.BuildTypeNameMap()
-	gen.GeneratePlugin(gohttp.New())
+	gen.GeneratePlugin(goenum.New())
 
 	for i := range gen.Response.File {
-		gen.Response.File[i].Name = proto.String(strings.Replace(gen.Response.File[i].GetName(), ".pb.go", ".gohttp.pb.go", -1))
+		gen.Response.File[i].Name = proto.String(strings.Replace(gen.Response.File[i].GetName(), ".pb.go", ".goenum.pb.go", -1))
 	}
 
 	data, err = proto.Marshal(gen.Response)
