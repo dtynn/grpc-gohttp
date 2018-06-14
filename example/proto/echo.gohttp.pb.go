@@ -17,7 +17,7 @@ import http "net/http"
 import grpc "google.golang.org/grpc"
 import codes "google.golang.org/grpc/codes"
 import metadata "google.golang.org/grpc/metadata"
-import types "github.com/dtynn/grpc-gohttp/pkg/types"
+import webapi "github.com/dtynn/grpc-gohttp/webapi"
 import proto1 "github.com/gogo/protobuf/proto"
 import fmt "fmt"
 import math "math"
@@ -29,24 +29,24 @@ var _ = fmt.Errorf
 var _ = math.Inf
 
 // RegisterWebAPIEchoServer register web api methods for Echo
-func RegisterWebAPIEchoServer(s types.Server, srv EchoServer) {
+func RegisterWebAPIEchoServer(s webapi.Interface, srv EchoServer) {
 	_Register_Echo_Ping_Handler(s, srv)
 	_Register_Echo_Stream_Handler(s, srv)
 }
 
-func _Register_Echo_Ping_Handler(s types.Server, srv EchoServer) {
-	s.Register("/proto.Echo/Ping", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+func _Register_Echo_Ping_Handler(s webapi.Interface, srv EchoServer) {
+	s.Post("/proto.Echo/Ping", http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		in := new(In)
-		if err := s.ParseRequest(req, in); err != nil {
-			s.HandleResponse(rw, nil, grpc.Errorf(codes.InvalidArgument, "parse request into %T: %s", in, err))
+		if err := s.In(req, in); err != nil {
+			s.Out(rw, nil, grpc.Errorf(codes.InvalidArgument, "parse request into %T: %s", in, err))
 			return
 		}
 
 		ctx := metadata.NewIncomingContext(req.Context(), metadata.MD(req.Header).Copy())
 		out, err := srv.Ping(ctx, in)
-		s.HandleResponse(rw, out, err)
+		s.Out(rw, out, err)
 	}))
 }
 
-func _Register_Echo_Stream_Handler(s types.Server, srv EchoServer) {
+func _Register_Echo_Stream_Handler(s webapi.Interface, srv EchoServer) {
 }
